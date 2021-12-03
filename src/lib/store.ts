@@ -9,7 +9,7 @@ export function createStore(name, defaultValue, storeOptions = {}) {
     ...DEFAULT_STORE_OPTIONS,
     ...storeOptions
   };
-  let internalStore = defaultValue;
+  let internalStore = options.deserialize(defaultValue);
   const localStorageValue = window.localStorage.getItem(`store.${name}`);
 
   if (localStorageValue) {

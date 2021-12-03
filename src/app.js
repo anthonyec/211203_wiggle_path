@@ -8,6 +8,9 @@ import { uuid } from './lib/uuid';
 // TODO: Disable hot-reload in parcel so I don't need to do this.
 document.body.innerHTML = '';
 
+const mouse = {
+  down: false
+};
 const tool = createStore('tool', {
   current: 'select',
   selectedElementIds: []
@@ -190,6 +193,20 @@ canvas.addEventListener('click', (event) => {
   }
 });
 
+canvas.addEventListener('mousedown', (event) => {
+  mouse.down = true;
+});
+
+canvas.addEventListener('mouseup', (event) => {
+  mouse.down = false;
+});
+
+canvas.addEventListener('mousemove', (event) => {
+  if (mouse.down) {
+    console.log('do something');
+  }
+});
+
 createButton('Select', () => {
   tool.write((store) => {
     return {
@@ -216,6 +233,33 @@ createButton('Link', () => {
       return [...store, { type: 'link', from: selectedElementIds[index], to: selectedElementIds[index + 1] }]
     });
   }
+});
+
+createButton('Delete', () => {
+  const selectedElementIds = tool.read().selectedElementIds;
+
+  selectedElementIds.forEach((id) => {
+    const rawDrawing = drawing.read();
+
+    const index = rawDrawing.findIndex(element => element.id === id);
+    const drawingWithoutElement = [...rawDrawing.slice(0, index), ...rawDrawing.slice(index + 1)];
+
+    // const foundLinks = drawingWithoutElement.filter(element => element.from === id || element.to === id).map((element) => {
+    //   return drawingWithoutElement.indexOf()
+    // });
+    // console.log(foundLinks);
+    // const drawingWithoutLinks = foundLinks.reduce((mem, element) => {
+    //   if (!drawingWithoutElement) {
+    //     mem.push(element);
+    //   }
+
+    //   return mem;
+    // }, []);
+
+    // drawing.write(() => {
+    //   return drawingWithoutLinks;
+    // });
+  });
 });
 
 createButton('Undo', () => {
