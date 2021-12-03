@@ -3,10 +3,15 @@ import { createCanvas2D } from './lib/canvas';
 import { createVector, mouseEventToVector } from './lib/vector2';
 import { createButton } from './lib/controls';
 import { randomBetween } from './lib/random';
+import { uuid } from './lib/uuid';
 
 // TODO: Disable hot-reload in parcel so I don't need to do this.
 document.body.innerHTML = '';
 
+const tool = createStore('tool', {
+  current: 'select',
+  selectedElementIds: []
+}, { maxHistorySize: 1});
 const drawing = createStore('drawing', [], {
   deserialize: (serializedDrawing) => {
     return serializedDrawing.map((serializedElement) => {
@@ -22,6 +27,14 @@ const drawing = createStore('drawing', [], {
   }
 });
 const [canvas, ctx] = createCanvas2D(800, 800);
+
+function findClosestPoint(rawDrawing = [], mousePosition) {
+  return rawDrawing.find((element) => {
+    if (element.type === 'point') {
+      return element.position.distanceTo(mousePosition) < 10;
+    }
+  });
+}
 
 function drawPoint(context, point, radius = 5) {
   context.beginPath();
@@ -43,33 +56,31 @@ function processDrawing(rawDrawing) {
         ...element,
         position: element.position.add(
           createVector(
-            randomBetween(-element.properties.shakiness, element.properties.shakiness),
-            randomBetween(-element.properties.shakiness, element.properties.shakiness)
+            randomBetween(-5, 5),
+            randomBetween(-5, 5)
           )
         )
       });
     }
 
     if (element.type === 'link') {
-      const startPoint = mem[element.from];
-      const endPoint = mem[element.to];
+      const startPoint = mem.find((findElement) => findElement.id === element.from);
+      const endPoint = mem.find((findElement) => findElement.id === element.to);
 
       // TODO: Make sure we dont make lines if we cant connect them.
       // if (!(startPoint && startPoint.type !== 'point') || !(endPoint && endPoint.type !== 'point')) {
       //   return mem;
       // }
 
-      if (element.properties.wiggliness === 0) {
-        mem.push({
-          type: 'line',
-          start: startPoint.position,
-          end: endPoint.position
-        });
+      // mem.push({
+      //   type: 'line',
+      //   start: startPoint.position,
+      //   end: endPoint.position
+      // });
 
-        return;
-      }
+      // return mem;
 
-      const segments = 5;
+      const segments = 15;
       const distance = startPoint.position.distanceTo(endPoint.position);
       const segmentRatio = (distance / segments) / distance;
       const lineBetween = endPoint.position.sub(startPoint.position).scale(segmentRatio);
@@ -80,7 +91,7 @@ function processDrawing(rawDrawing) {
       for (let i = 0; i < segments; i++) {
         const nextPosition = lastPosition
           .add(lineBetween)
-          .add(perpendicularLine.scale(randomBetween(-element.properties.wiggliness, element.properties.wiggliness)))
+          .add(perpendicularLine.scale(randomBetween(-5, 5)))
         const isEnd = (i === segments - 1);
 
         mem.push({
@@ -105,7 +116,7 @@ function draw() {
   const rawDrawing = drawing.read();
   const processedDrawing = processDrawing(rawDrawing);
 
-  processedDrawing.forEach((element) => {
+  processedDrawing.forEach((element, index) => {
     if (element.type === 'point') {
       drawPoint(ctx, element.position);
     }
@@ -115,25 +126,96 @@ function draw() {
     }
   });
 
+  rawDrawing.forEach((element) => {
+    if (tool.read().selectedElementIds.includes(element.id)) {
+      ctx.strokeStyle = 'cyan';
+      ctx.lineWidth = 2
+      ctx.beginPath();
+      ctx.rect(element.position.x - 10, element.position.y - 10, 20, 20);
+      ctx.stroke();
+    }
+  });
+
   window.requestAnimationFrame(draw);
 }
 
 draw();
 
 canvas.addEventListener('click', (event) => {
-  const position = mouseEventToVector(event);
+  const mousePosition = mouseEventToVector(event);
 
-  if (event.shiftKey) {
-    drawing.write((store) => {
-      return [...store, { type: 'link', from: 0, to: 1, properties: { wiggliness: 5} }]
-    });
+  if (tool.read().current === 'select') {
+    const element = findClosestPoint(drawing.read(), mousePosition);
 
-    return;
+    if (!element) {
+      tool.write((store) => {
+        return {
+          ...store,
+          selectedElementIds: []
+        }
+      });
+
+      return;
+    }
+
+    if (event.shiftKey) {
+      tool.write((store) => {
+        return {
+          ...store,
+          selectedElementIds: [...store.selectedElementIds, element.id]
+        }
+      });
+    } else {
+      tool.write((store) => {
+        return {
+          ...store,
+          selectedElementIds: [element.id]
+        }
+      });
+    }
+
   }
 
-  drawing.write((store) => {
-    return [...store, { type: 'point', position, properties: { shakiness: 5 } }]
+  if (tool.read().current === 'point') {
+    drawing.write((store) => {
+      return [...store, { id: uuid(), type: 'point', position: mousePosition }]
+    });
+
+    tool.write((store) => {
+      return {
+        ...store,
+        selectedElementIds: []
+      }
+    });
+  }
+});
+
+createButton('Select', () => {
+  tool.write((store) => {
+    return {
+      ...store,
+      current: 'select'
+    }
   });
+});
+
+createButton('Point', () => {
+  tool.write((store) => {
+    return {
+      ...store,
+      current: 'point'
+    }
+  });
+});
+
+createButton('Link', () => {
+  const selectedElementIds = tool.read().selectedElementIds;
+
+  for (let index = 0; index < selectedElementIds.length - 1; index++) {
+    drawing.write((store) => {
+      return [...store, { type: 'link', from: selectedElementIds[index], to: selectedElementIds[index + 1] }]
+    });
+  }
 });
 
 createButton('Undo', () => {
