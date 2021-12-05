@@ -1,3 +1,9 @@
+export interface Vector2 {
+  x: number;
+  y: number;
+}
+
+// TODO: Typescript!
 export function createVector(x = 0, y = 0) {
   const vector = {
     x,

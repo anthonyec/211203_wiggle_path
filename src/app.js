@@ -243,22 +243,6 @@ createButton('Delete', () => {
 
     const index = rawDrawing.findIndex(element => element.id === id);
     const drawingWithoutElement = [...rawDrawing.slice(0, index), ...rawDrawing.slice(index + 1)];
-
-    // const foundLinks = drawingWithoutElement.filter(element => element.from === id || element.to === id).map((element) => {
-    //   return drawingWithoutElement.indexOf()
-    // });
-    // console.log(foundLinks);
-    // const drawingWithoutLinks = foundLinks.reduce((mem, element) => {
-    //   if (!drawingWithoutElement) {
-    //     mem.push(element);
-    //   }
-
-    //   return mem;
-    // }, []);
-
-    // drawing.write(() => {
-    //   return drawingWithoutLinks;
-    // });
   });
 });
 
