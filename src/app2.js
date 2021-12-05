@@ -20,11 +20,25 @@ drawing.link(elementC, elementB, { wiggliness: 5, segments: 10 });
 drawing.link(elementD, elementC, { wiggliness: 5, segments: 10 });
 
 const mouse = { position: createVector(), down: false, lastPosition: createVector() };
-let selectedPoints = [];
+let selected = {};
 
 document.body.addEventListener('keydown', (event) => {
-  if (selectedPoints.length > 1 && event.key === 'l') {
-    drawing.link(selectedPoints[0].id, selectedPoints[1].id);
+  if (event.key === 'Backspace') {
+    Object.keys(selected).forEach((pointOrLinkId) => {
+      // TODO: Should there be a check here? Maybe results should contain a type. Or maybe they should be split?
+      drawing.remove(pointOrLinkId);
+      drawing.dissolve(pointOrLinkId);
+      selected = {};
+    });
+  }
+
+  if (event.key === 'l') {
+    for (let index = 0; index < Object.keys(selected).length - 1; index++) {
+      const idA = Object.keys(selected)[index];
+      const idB = Object.keys(selected)[index + 1];
+
+      drawing.link(idA, idB);
+    }
   }
 });
 
@@ -39,33 +53,31 @@ canvas.addEventListener('mousedown', (event) => {
 
   const hitInfo = drawing.hit(mouse.position, 15);
 
-  console.log(hitInfo);
-
-  if (hitInfo.length && selectedPoints.length > 1 && !event.shiftKey) {
-    return;
+  if (!event.shiftKey) {
+    selected = {};
   }
 
-  if (hitInfo.length && selectedPoints.length > 1 && event.shiftKey) {
-    selectedPoints = [...selectedPoints, hitInfo.points[0]];
-  }
-
-  if (hitInfo.total === 0) {
-    selectedPoints = [];
-  } else if (hitInfo.total !== 0 && event.shiftKey) {
-    selectedPoints = [...selectedPoints, hitInfo.points[0]];
+  if (hitInfo.points.length) {
+    selected[hitInfo.points[0].id] = hitInfo.points[0];
+  } else if (hitInfo.links.length) {
+    selected[hitInfo.links[0].id] = hitInfo.links[0];
   } else {
-    selectedPoints = [hitInfo.points[0]];
+    selected = {};
   }
 });
 
 canvas.addEventListener('mousemove', (event) => {
+  console.log(selected);
+
   mouse.position = mouseEventToVector(event);
 
   const difference = mouse.position.sub(mouse.lastPosition);
 
-  if (selectedPoints.length && mouse.down) {
-    selectedPoints.forEach((point) => {
-      drawing.move(point.id, point.position.add(difference));
+  if (Object.keys(selected).length && mouse.down) {
+    Object.keys(selected).forEach((pointOrLinkId) => {
+      // const point = drawing.get(pointOrLinkId);
+
+      // drawing.move(pointOrLinkId, mouse.position);
     });
   }
 ;});

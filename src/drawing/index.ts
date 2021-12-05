@@ -121,6 +121,11 @@ class Drawing {
   link(fromElementId: string, toElementId: string, properties?: DrawingLinkProperties): string {
     const linkId = getDeterministicLinkId(fromElementId, toElementId);
 
+    if (!this.points[fromElementId] || !this.points[toElementId]) {
+      console.warn('"from" or "to" point does not exist');
+      return;
+    }
+
     this.links[linkId] = { from: fromElementId, to: toElementId } as DrawingLink;
 
     if (properties) {
@@ -137,6 +142,10 @@ class Drawing {
       delete this.properties[linkId];
     }
 
+    delete this.links[linkId];
+  }
+
+  dissolve(linkId: string) {
     delete this.links[linkId];
   }
 
