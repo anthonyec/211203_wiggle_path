@@ -1,4 +1,4 @@
-import createDrawing from './drawing';
+import createDrawing, { drawPoint } from './drawing';
 import { createCanvas2D } from './lib/canvas';
 import { createVector, mouseEventToVector } from './lib/vector2';
 
@@ -22,6 +22,20 @@ drawing.link(elementD, elementC, { wiggliness: 5, segments: 10 });
 const mouse = { position: createVector(), down: false, lastPosition: createVector(), delta: createVector(), lastMovePosition: createVector(), brokeThreshold: false };
 let selected = {};
 
+drawing.on('after-draw', () => {
+
+  Object.keys(selected).forEach((id) => {
+    const selectedPointOrLink = selected[id];
+
+    context.strokeStyle = 'cyan';
+    drawPoint(context, selectedPointOrLink.position, 8);
+  });
+  // context.beginPath();
+  // context.moveTo(0, 0);
+  // context.lineTo(10, 10);
+  // context.stroke();
+});
+
 document.body.addEventListener('keydown', (event) => {
   if (event.key === 'Backspace') {
     Object.keys(selected).forEach((pointOrLinkId) => {
@@ -39,6 +53,8 @@ document.body.addEventListener('keydown', (event) => {
 
       drawing.link(idA, idB);
     }
+
+    selected = {};
   }
 });
 
@@ -46,6 +62,10 @@ canvas.addEventListener('dblclick', (event) => {
   const id = drawing.add(mouseEventToVector(event));
 
   selected[id] = drawing.get(id);
+
+  if (event.shiftKey) {
+    console.log('oooo')
+  }
 });
 
 canvas.addEventListener('mousedown', (event) => {
@@ -85,6 +105,7 @@ canvas.addEventListener('mousemove', (event) => {
       }
 
       drawing.move(pointOrLinkId, mouse.delta, true);
+      selected[pointOrLinkId] = drawing.get(pointOrLinkId); // TODO: Yuck.
     });
 
     mouse.brokeThreshold = true;
@@ -99,7 +120,3 @@ canvas.addEventListener('mouseup', (event) => {
 });
 
 console.log(drawing);
-
-setInterval(() => {
-  console.log(selected);
-}, 100);

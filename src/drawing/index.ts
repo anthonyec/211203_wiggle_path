@@ -1,6 +1,8 @@
 import { randomId } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
+import EventEmitter from './events';
+
 interface DrawingLink {
   from: string;
   to: string;
@@ -50,26 +52,27 @@ function pointToLineCollision(lineStartPosition, lineEndPosition, pointPosition,
   return (d1 + d2) >= lineLength - buffer && (d1 + d2) <= lineLength + buffer;
 }
 
-function drawPoint(context, position, radius = 5) {
+export function drawPoint(context, position, radius = 5) {
   context.beginPath();
   context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
   context.stroke();
 }
 
-function drawLine(context, positionA, positionB) {
+export function drawLine(context, positionA, positionB) {
   context.beginPath();
   context.moveTo(positionA.x, positionA.y);
   context.lineTo(positionB.x, positionB.y);
   context.stroke();
 };
 
-class Drawing {
+class Drawing extends EventEmitter {
   context: CanvasRenderingContext2D;
   points = {};
   links = {};
   properties = {};
 
   constructor({ context }: { context: CanvasRenderingContext2D }) {
+    super();
     this.context = context;
   }
 
@@ -166,6 +169,8 @@ class Drawing {
 
       drawLine(this.context, this.points[link.from], this.points[link.to]);
     });
+
+    this.emit('after-draw');
 
     window.requestAnimationFrame(this.draw.bind(this));
   }
