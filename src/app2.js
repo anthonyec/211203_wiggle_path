@@ -19,7 +19,7 @@ drawing.link(elementA, elementC, { wiggliness: 5, segments: 10 });
 drawing.link(elementC, elementB, { wiggliness: 5, segments: 10 });
 drawing.link(elementD, elementC, { wiggliness: 5, segments: 10 });
 
-const mouse = { position: createVector(), down: false, lastPosition: createVector() };
+const mouse = { position: createVector(), down: false, lastPosition: createVector(), delta: createVector(), lastMovePosition: createVector(), brokeThreshold: false };
 let selected = {};
 
 document.body.addEventListener('keydown', (event) => {
@@ -43,18 +43,23 @@ document.body.addEventListener('keydown', (event) => {
 });
 
 canvas.addEventListener('dblclick', (event) => {
-  drawing.add(mouseEventToVector(event));
+  const id = drawing.add(mouseEventToVector(event));
+
+  selected[id] = drawing.get(id);
 });
 
 canvas.addEventListener('mousedown', (event) => {
   mouse.position = mouseEventToVector(event);
   mouse.lastPosition = mouseEventToVector(event);
+  mouse.lastMovePosition = mouseEventToVector(event);
   mouse.down = true;
+  mouse.brokeThreshold = false;
 
   const hitInfo = drawing.hit(mouse.position, 15);
+  const isNotInSelection = hitInfo.points.length && !Object.keys(selected).includes(hitInfo.points[0].id);
 
-  if (!event.shiftKey) {
-    selected = {};
+  if (!event.shiftKey && isNotInSelection) {
+    selected = {}
   }
 
   if (hitInfo.points.length) {
@@ -67,19 +72,25 @@ canvas.addEventListener('mousedown', (event) => {
 });
 
 canvas.addEventListener('mousemove', (event) => {
-  console.log(selected);
-
   mouse.position = mouseEventToVector(event);
+  mouse.delta = mouse.position.sub(mouse.lastMovePosition);
 
-  const difference = mouse.position.sub(mouse.lastPosition);
+  const threshold = mouse.lastPosition.distanceTo(mouse.position);
 
-  if (Object.keys(selected).length && mouse.down) {
+  // TODO: Messy!
+  if (Object.keys(selected).length && mouse.down && (mouse.brokeThreshold || threshold > 3)) {
     Object.keys(selected).forEach((pointOrLinkId) => {
-      // const point = drawing.get(pointOrLinkId);
+      if (!mouse.brokeThreshold) {
+        drawing.move(pointOrLinkId, mouse.position.sub(mouse.lastPosition), true);
+      }
 
-      // drawing.move(pointOrLinkId, mouse.position);
+      drawing.move(pointOrLinkId, mouse.delta, true);
     });
+
+    mouse.brokeThreshold = true;
   }
+
+  mouse.lastMovePosition = mouseEventToVector(event);
 ;});
 
 canvas.addEventListener('mouseup', (event) => {
@@ -88,3 +99,7 @@ canvas.addEventListener('mouseup', (event) => {
 });
 
 console.log(drawing);
+
+setInterval(() => {
+  console.log(selected);
+}, 100);
