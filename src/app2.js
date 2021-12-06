@@ -5,7 +5,7 @@ import { createVector, mouseEventToVector } from './lib/vector2';
 // TODO: Disable hot-reload in parcel so I don't need to do this.
 document.body.innerHTML = '';
 
-const [canvas, context] = createCanvas2D(500, 500);
+const [canvas, context] = createCanvas2D();
 const drawing = createDrawing(context);
 
 const elementA = drawing.add(createVector(100, 10));

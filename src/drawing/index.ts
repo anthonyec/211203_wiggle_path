@@ -230,8 +230,8 @@ class Drawing extends EventEmitter {
         );
       });
 
-      this.emit('after-draw');
       this.lastDrawTime = Date.now();
+      this.emit('after-draw');
     }
 
     window.requestAnimationFrame(this.draw.bind(this));
