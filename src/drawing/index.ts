@@ -260,6 +260,12 @@ class Drawing extends EventEmitter {
     }
   }
 
+  getAllPoints() {
+    return Object.keys(this.points).map((id) => {
+      return this.get(id);
+    });
+  }
+
   hit(position: Vector2, radius: number = 5): DrawingHitResults {
     const pointIds = Object.keys(this.points).filter((id) => {
       const point = this.points[id];

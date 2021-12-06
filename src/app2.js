@@ -86,6 +86,13 @@ document.body.addEventListener('keydown', (event) => {
       selected = {};
     }
   }
+
+  if (event.key === 'a') {
+    selected = drawing.getAllPoints().reduce((mem, point) => {
+      mem[point.id] = point;
+      return mem;
+    }, {});
+  }
 });
 
 canvas.addEventListener('dblclick', (event) => {
