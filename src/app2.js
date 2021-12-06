@@ -15,9 +15,9 @@ const elementD = drawing.add(createVector(400, 100));
 
 drawing.setProperties(elementA, { wiggliness: 10 });
 
-drawing.link(elementA, elementC, { wiggliness: 5, segments: 10 });
-drawing.link(elementC, elementB, { wiggliness: 5, segments: 10 });
-drawing.link(elementD, elementC, { wiggliness: 5, segments: 10 });
+drawing.link(elementA, elementC);
+drawing.link(elementC, elementB);
+drawing.link(elementD, elementC, { wiggliness: 2, segments: 20 });
 
 const mouse = { position: createVector(), down: false, lastPosition: createVector(), delta: createVector(), lastMovePosition: createVector(), brokeThreshold: false };
 let selected = {};

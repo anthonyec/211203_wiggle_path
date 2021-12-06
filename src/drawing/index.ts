@@ -1,4 +1,4 @@
-import { randomId } from "../lib/random";
+import { randomBetween, randomId } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
 import EventEmitter from './events';
@@ -58,11 +58,43 @@ export function drawPoint(context, position, radius = 5) {
   context.stroke();
 }
 
-export function drawLine(context, positionA, positionB) {
-  context.beginPath();
-  context.moveTo(positionA.x, positionA.y);
-  context.lineTo(positionB.x, positionB.y);
-  context.stroke();
+export function drawLine(context, positionA, positionB, properties: DrawingLinkProperties) {
+  const segments = properties?.segments || 0;
+  const wiggliness = properties?.wiggliness || 0;
+
+  if (segments === 0 || wiggliness === 0) {
+    context.beginPath();
+    context.moveTo(positionA.x, positionA.y);
+    context.lineTo(positionB.x, positionB.y);
+    context.stroke();
+    return;
+  }
+
+  const distance = positionA.distanceTo(positionB);
+  const segmentPercent = (distance / segments) / distance;
+  const lineBetween = positionB.sub(positionA).scale(segmentPercent);
+  const perpendicularLine = lineBetween.perpendicular().normalize();
+
+  let lastPosition = positionA;
+
+  for (let i = 0; i < segments; i++) {
+    const nextPosition = lastPosition
+      .add(lineBetween)
+      .add(perpendicularLine.scale(randomBetween(-wiggliness, wiggliness)))
+
+    context.beginPath();
+    context.moveTo(lastPosition.x, lastPosition.y);
+
+    if (i === segments - 1) {
+      context.lineTo(positionB.x, positionB.y);
+    } else {
+      context.lineTo(nextPosition.x, nextPosition.y);
+    }
+
+    context.stroke();
+
+    lastPosition = nextPosition;
+  };
 };
 
 class Drawing extends EventEmitter {
@@ -70,6 +102,9 @@ class Drawing extends EventEmitter {
   points = {};
   links = {};
   properties = {};
+  baseProperties = { shakiness: 3, segments: 10, wiggliness: 5 };
+  lastDrawTime = 0;
+  fps = 60
 
   constructor({ context }: { context: CanvasRenderingContext2D }) {
     super();
@@ -152,25 +187,52 @@ class Drawing extends EventEmitter {
     delete this.links[linkId];
   }
 
-  draw() {
-    this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-    this.context.strokeStyle = 'white';
-    this.context.lineWidth = 2;
-
-    Object.keys(this.points).forEach((id) => {
+  getPointsWithEffects() {
+    return Object.keys(this.points).reduce((mem, id) => {
       const point = this.points[id];
+      const properties = {...this.baseProperties, ...this.properties[id]};
+      const offsetScalar = properties?.shakiness || 0;
+      const offset = createVector(
+        randomBetween(-offsetScalar, offsetScalar),
+        randomBetween(-offsetScalar, offsetScalar)
+      );
 
-      drawPoint(this.context, point)
-    });
+      mem[id] = point.add(offset);
 
+      return mem;
+    }, {});
+  }
 
-    Object.keys(this.links).forEach((id) => {
-      const link = this.links[id];
+  draw() {
+    const frameDelta = Date.now() - this.lastDrawTime;
+    if (frameDelta > 1000 / this.fps) {
+      this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+      this.context.strokeStyle = 'white';
+      this.context.lineWidth = 2;
 
-      drawLine(this.context, this.points[link.from], this.points[link.to]);
-    });
+      const pointsWithEffects = this.getPointsWithEffects();
 
-    this.emit('after-draw');
+      Object.keys(pointsWithEffects).forEach((id) => {
+        const point = pointsWithEffects[id];
+        drawPoint(this.context, point)
+      });
+
+      Object.keys(this.links).forEach((id) => {
+        const link = this.links[id];
+        drawLine(
+          this.context,
+          pointsWithEffects[link.from],
+          pointsWithEffects[link.to],
+          {
+            ...this.baseProperties,
+            ...this.properties[id]
+          }
+        );
+      });
+
+      this.emit('after-draw');
+      this.lastDrawTime = Date.now();
+    }
 
     window.requestAnimationFrame(this.draw.bind(this));
   }
