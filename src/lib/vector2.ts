@@ -41,6 +41,9 @@ export function createVector(x = 0, y = 0) {
       return createVector(
         this.y, -this.x
       );
+    },
+    abs() {
+      return createVector(Math.abs(this.x), Math.abs(this.y));
     }
   };
 

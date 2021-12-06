@@ -224,6 +224,30 @@ class Drawing extends EventEmitter {
       links
     }
   }
+
+  hitWithinBounds(position, size): DrawingPointResult[] {
+    let boundsPosition = position;
+    let boundsSize = size;
+
+    // TODO: Should this be done in drawing lib or outside of it?
+    // TODO: Fix this to work for negative Y but positive X.
+    if (size.x < 0 || size.y < 0) {
+      boundsPosition = boundsPosition.sub(size.abs());
+      boundsSize = size.abs();
+    }
+
+    const pointIds = Object.keys(this.points).filter((id) => {
+      const point = this.points[id];
+      const withinX = point.x > boundsPosition.x && point.x < boundsPosition.x + boundsSize.x;
+      const withinY = point.y > boundsPosition.y && point.y < boundsPosition.y + boundsSize.y;
+
+      return withinX && withinY;
+    });
+
+    const points = pointIds.map(this.get.bind(this)) as DrawingPointResult[];
+
+    return points;
+  }
 }
 
 export default function createDrawing(context: CanvasRenderingContext2D) {
