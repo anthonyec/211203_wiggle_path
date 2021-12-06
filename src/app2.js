@@ -8,16 +8,16 @@ document.body.innerHTML = '';
 const [canvas, context] = createCanvas2D();
 const drawing = createDrawing(context);
 
-const elementA = drawing.add(createVector(100, 10));
-const elementB = drawing.add(createVector(400, 300), { shakiness: 5 });
+const elementA = drawing.add(createVector(150, 150));
+const elementB = drawing.add(createVector(400, 300));
 const elementC = drawing.add(createVector(200, 400));
 const elementD = drawing.add(createVector(400, 100));
 
-drawing.setProperties(elementA, { wiggliness: 10 });
+drawing.setProperties(elementA);
 
 drawing.link(elementA, elementC);
 drawing.link(elementC, elementB);
-drawing.link(elementD, elementC, { wiggliness: 2, segments: 20 });
+drawing.link(elementD, elementC);
 
 const mouse = { position: createVector(), down: false, lastPosition: createVector(), delta: createVector(), lastMovePosition: createVector(), brokeThreshold: false };
 let selected = {};

@@ -102,7 +102,7 @@ class Drawing extends EventEmitter {
   points = {};
   links = {};
   properties = {};
-  baseProperties = { shakiness: 3, segments: 10, wiggliness: 5 };
+  baseProperties = { shakiness: 0, segments: 10, wiggliness: 0 };
   lastDrawTime = 0;
   fps = 60
 
@@ -250,10 +250,11 @@ class Drawing extends EventEmitter {
     }
 
     if (link) {
-      // TODO: Implement!
       return {
         id: pointIdOrLinkId,
+        // TODO: Implement!
         position: createVector(0, 0),
+        // TODO: Implement!
         size: createVector(0, 0),
         properties: this.properties[pointIdOrLinkId]
       } as DrawingLinkResult;
@@ -293,7 +294,7 @@ class Drawing extends EventEmitter {
     }
   }
 
-  hitWithinBounds(position, size): DrawingPointResult[] {
+  hitWithinBounds(position: Vector2, size: Vector2): DrawingPointResult[] {
     let boundsPosition = position;
     let boundsSize = size;
 
