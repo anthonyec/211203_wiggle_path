@@ -13,7 +13,6 @@ export function createCanvas2D(width, height) {
     canvas.width = bounds.width * 2;
     canvas.height = bounds.height * 2;
 
-    console.log(canvas.width);
     context.scale(2, 2);
   }
 

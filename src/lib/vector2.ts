@@ -2,6 +2,12 @@ export class Vector2 {
   x: number;
   y: number;
 
+  static ZERO = createVector(0, 0);
+  static UP = createVector(0, -1);
+  static DOWN = createVector(0, 1);
+  static LEFT = createVector(-1, 0);
+  static RIGHT = createVector(1, 0);
+
   constructor(x: number = 0, y: number = 0) {
     this.x = x;
     this.y = y;
@@ -30,15 +36,15 @@ export class Vector2 {
     }
   }
 
-  add(b) {
+  add(b: Vector2) {
     return createVector(this.x + b.x, this.y + b.y);
   }
 
-  sub(b) {
+  sub(b: Vector2) {
     return createVector(this.x - b.x, this.y - b.y);
   }
 
-  distanceTo(b) {
+  distanceTo(b: Vector2) {
     const difference = this.sub(b);
     return Math.sqrt(difference.x * difference.x + difference.y * difference.y);
   }
@@ -52,10 +58,18 @@ export class Vector2 {
   abs() {
     return createVector(Math.abs(this.x), Math.abs(this.y));
   }
+
+  angle(): number {
+    return Math.atan2(this.y, this.x);
+  }
+
+  angleTo(b: Vector2) {
+    return b.sub(this).angle();
+  }
 }
 
-export function createVector(...args) {
-  return new Vector2(...args);
+export function createVector(x: number = 0, y: number = 0) {
+  return new Vector2(x, y);
 }
 
 export function mouseEventToVector(event: MouseEvent) {

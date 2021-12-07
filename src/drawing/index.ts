@@ -187,6 +187,18 @@ class Drawing extends EventEmitter {
     delete this.links[linkId];
   }
 
+  getAllLinksAttachedTo(pointId: string) {
+    return Object.keys(this.links).reduce((mem, linkId) => {
+      const link = this.links[linkId];
+
+      if (link.from === pointId || link.to === pointId) {
+        mem[linkId] = link;
+      }
+
+      return mem;
+    }, {});
+  }
+
   getPointsWithEffects() {
     return Object.keys(this.points).reduce((mem, id) => {
       const point = this.points[id];
@@ -215,6 +227,8 @@ class Drawing extends EventEmitter {
       Object.keys(pointsWithEffects).forEach((id) => {
         const point = pointsWithEffects[id];
         drawPoint(this.context, point)
+        this.context.fillStyle = 'white';
+        this.context.fillText(id, point.x + 20, point.y);
       });
 
       Object.keys(this.links).forEach((id) => {

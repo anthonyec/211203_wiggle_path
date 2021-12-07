@@ -1,6 +1,9 @@
 import createDrawing, { drawPoint } from './drawing';
 import { createCanvas2D } from './lib/canvas';
-import { createVector, mouseEventToVector } from './lib/vector2';
+import { deg2rad, rad2deg } from './lib/math';
+import { randomBetween } from './lib/random';
+import { rotatePointAroundPivot } from './lib/transform';
+import { createVector, mouseEventToVector, Vector2 } from './lib/vector2';
 
 // TODO: Disable hot-reload in parcel so I don't need to do this.
 document.body.innerHTML = '';
@@ -12,16 +15,27 @@ const elementA = drawing.add(createVector(150, 150));
 const elementB = drawing.add(createVector(400, 300));
 const elementC = drawing.add(createVector(200, 400));
 const elementD = drawing.add(createVector(400, 100));
+const elementE = drawing.add(createVector(155, 95));
+
+const elementF = drawing.add(createVector(300, 40));
+const elementG = drawing.add(createVector(310, 50));
 
 drawing.setProperties(elementA);
 
 drawing.link(elementA, elementC);
 drawing.link(elementC, elementB);
 drawing.link(elementD, elementC);
+drawing.link(elementA, elementE);
+
+drawing.link(elementF, elementG);
+
+console.log(b);
 
 const mouse = { position: createVector(), down: false, lastPosition: createVector(), delta: createVector(), lastMovePosition: createVector(), brokeThreshold: false };
 let selected = {};
-let selection = { position: createVector(), size: createVector() }
+let selection = { position: createVector(), size: createVector(), bounds: { min: createVector(), max: createVector() } }
+let mode = 'default';
+let modeState = { rotation: 0, scale: createVector(0, 0), move: createVector(0, 0) };
 
 drawing.on('after-draw', () => {
   Object.keys(selected).forEach((id) => {
@@ -43,6 +57,14 @@ drawing.on('after-draw', () => {
       selection.size.y
     );
     context.stroke();
+  }
+
+  if (!selection.active) {
+    context.strokeStyle = 'red';
+    drawPoint(
+      context,
+      selection.bounds.min.add(selection.bounds.max.sub(selection.bounds.min).scale(0.5))
+    );
   }
 });
 
@@ -93,6 +115,16 @@ document.body.addEventListener('keydown', (event) => {
       return mem;
     }, {});
   }
+
+  if (event.key === 'r' && mode !== 'rotate') {
+    mode = 'rotate';
+    modeState.mouseStartPosition = mouse.position;
+    modeState.pivot = selection.bounds.min.add(selection.bounds.max.sub(selection.bounds.min).scale(0.5));
+  }
+
+  if (event.key === 'Escape' && mode !== 'default') {
+    mode = 'default';
+  }
 });
 
 canvas.addEventListener('dblclick', (event) => {
@@ -124,11 +156,21 @@ canvas.addEventListener('mousedown', (event) => {
     selected = {};
     selection = { ...selection, size: createVector(), position: mouse.position, active: true }
   }
+
+  mode = 'default';
 });
 
 canvas.addEventListener('mousemove', (event) => {
   mouse.position = mouseEventToVector(event);
   mouse.delta = mouse.position.sub(mouse.lastMovePosition);
+
+  // Object.keys(selected).forEach((pointOrLinkId) => {
+  //   console.log('move');
+  //   const point = drawing.get(pointOrLinkId);
+  //   const rotatedPoint = rotatePointAroundPivot(point.position, createVector(300, 300), deg2rad(mouse.delta.y));
+
+  //   drawing.move(pointOrLinkId, rotatedPoint);
+  // });
 
   const threshold = mouse.lastPosition.distanceTo(mouse.position);
 
@@ -160,6 +202,16 @@ canvas.addEventListener('mousemove', (event) => {
     });
   }
 
+  if (mode === 'rotate') {
+    const angle = modeState.mouseStartPosition.angleTo(mouse.position);
+
+    Object.keys(selected).forEach((id) => {
+      const point = selected[id];
+      const rotated = rotatePointAroundPivot(point.position, modeState.pivot, angle);
+      drawing.move(point.id, rotated);
+    });
+  }
+
   mouse.lastMovePosition = mouseEventToVector(event);
 ;});
 
@@ -167,7 +219,15 @@ canvas.addEventListener('mouseup', (event) => {
   mouse.position = mouseEventToVector(event);
   mouse.down = false;
 
-  selection = { ...selection, active: false };
+  const xs = Object.keys(selected).map(id => drawing.get(id).position.x);
+  const ys = Object.keys(selected).map(id => drawing.get(id).position.y);
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  selection = { ...selection, bounds: { min: createVector(minX, minY), max: createVector(maxX, maxY) }, active: false };
 });
 
 console.log(drawing);
