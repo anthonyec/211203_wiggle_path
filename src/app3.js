@@ -9,42 +9,26 @@ document.body.innerHTML = '';
 const [canvas, context] = createCanvas2D();
 const drawing = createDrawingGraph(context);
 
-const a = drawing.addNode(createVector(30, 30));
-const b = drawing.addNode(createVector(100, 100));
-const c = drawing.addNode(createVector(300, 50));
-const d = drawing.addNode(createVector(200, 500));
+const zero = drawing.addNode(createVector(100, 100));
+const one = drawing.addNode(createVector(100, 200));
+const two = drawing.addNode(createVector(150, 150));
+const three = drawing.addNode(createVector(200, 100));
+const four = drawing.addNode(createVector(200, 200));
 
-const one = drawing.addNode(createVector(600, 600));
-const two = drawing.addNode(createVector(620, 610));
-const three = drawing.addNode(createVector(640, 630));
+const a = drawing.addNode(createVector(600, 600));
+const b = drawing.addNode(createVector(620, 620));
+const c = drawing.addNode(createVector(630, 630));
 
-const rocket = drawing.addNode(createVector(400, 600));
-const r1 = drawing.addNode(createVector(450, 600));
-const r2 = drawing.addNode(createVector(400, 650));
-const r3 = drawing.addNode(createVector(350, 650));
-const r4 = drawing.addNode(createVector(450, 650));
-const r5 = drawing.addNode(createVector(500, 650));
-
-drawing.addEdge(rocket, r1);
-drawing.addEdge(r1, r4);
-drawing.addEdge(r4, r5);
-drawing.addEdge(r4, r2);
-drawing.addEdge(r2, r3);
-drawing.addEdge(rocket, r3);
-drawing.addEdge(rocket, r2);
+drawing.addEdge(zero, one);
+drawing.addEdge(one, two);
+drawing.addEdge(two, zero);
+drawing.addEdge(zero, three);
+drawing.addEdge(two, four);
 
 drawing.addEdge(a, b);
 drawing.addEdge(b, c);
-drawing.addEdge(c, a);
 
-drawing.addEdge(b, d);
-drawing.addEdge(d, b);
-
-// drawing.removeNode(d);
-// drawing.removeEdge(b, d);
-
-drawing.addEdge(one, two);
-drawing.addEdge(two, three);
+drawing.getAllConnectedNodes(a);
 
 drawing.nodes.forEach((position, nodeId) => {
   context.strokeStyle = 'white';

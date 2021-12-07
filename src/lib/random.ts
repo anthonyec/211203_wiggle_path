@@ -2,7 +2,7 @@ export function randomBetween(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
-let i = 0;
+let i = -1;
 export function randomId() {
   i++;
   return `${i}`;

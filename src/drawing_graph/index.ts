@@ -1,5 +1,5 @@
 import { randomId } from "../lib/random";
-import { splice } from '../lib/array';
+import { check, splice, unique } from '../lib/array';
 import { Vector2 } from "../lib/vector2";
 
 function getDeterministicEdgeId(fromElementId: string, toElementId: string) {
@@ -113,27 +113,33 @@ class DrawingGraph {
     });
   }
 
-  // TODO: This is totally broken!
+  // https://www.programiz.com/dsa/graph-dfs
   getAllConnectedNodes(initialNodeId: string) {
-    const visited = [];
-    const connectedNodeIds = []
+    let visited = [];
+    let stack = [];
 
-    function visit(visitNodeId: string, adjacencyList) {
-      const adjacencyNodes = adjacencyList.get(visitNodeId);
+    const visit = (nodeId: string) => {
+      const adjacent = this.adjacencyList.get(nodeId) || [];
 
-      visited.push(visitNodeId);
+      if (stack.length) {
+        stack = splice(stack, 0);
+      }
 
-      adjacencyNodes.forEach((adjacentNodeId) => {
-        if (!visited.includes(adjacentNodeId)) {
-          connectedNodeIds.push(visitNodeId);
-          return visit(adjacentNodeId, adjacencyList);
-        }
+      const filteredAdjacent = adjacent.filter((x) => {
+        return !visited.includes(x) && !stack.includes(x);
       });
-    }
 
-    visit(initialNodeId, this.adjacencyList);
+      visited = [...visited, nodeId];
+      stack = [...stack, ...filteredAdjacent];
 
-    return connectedNodeIds.map((connectedNodeId) => this.getNodeResult(connectedNodeId));
+      if (stack.length) {
+        visit(stack[0]);
+      }
+    };
+
+    visit(initialNodeId);
+
+    console.log('visited', visited);
   }
 };
 
