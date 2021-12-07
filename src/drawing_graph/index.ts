@@ -6,7 +6,7 @@ function getDeterministicEdgeId(fromElementId: string, toElementId: string) {
   return [fromElementId, toElementId].sort().join('-')
 }
 
-class DrawingGraph {
+export class DrawingGraph {
   edges = new Map();
   adjacencyList = new Map();
   nodes = new Map();
@@ -139,7 +139,7 @@ class DrawingGraph {
 
     visit(initialNodeId);
 
-    console.log('visited', visited);
+    return visited;
   }
 };
 
