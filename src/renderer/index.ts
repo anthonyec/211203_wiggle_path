@@ -3,8 +3,8 @@ import { sinWave } from "../lib/math";
 import { randomBetween } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
-const BASE_POINT_PROPERTIES = { offset: 0, wave: { speed: 1, amplitude: 50 } };
-const BASE_LINE_PROPERTIES = { segments: 100, jitter: 0, wave: { speed: 0.5, amplitude: 10 }, taper: true  };
+const BASE_POINT_PROPERTIES = { jitter: 0, wave: { speed: 0, amplitude: 0 } };
+const BASE_LINE_PROPERTIES = { segments: 20, jitter: 0, wave: { speed: 0.5, amplitude: 10 }, taper: true  };
 
 export function drawPoint(context: CanvasRenderingContext2D, position, properties?) {
   const radius = 5;
@@ -84,8 +84,8 @@ class Renderer {
         ...this.properties.get(nodeId)
       };
       const randomOffset = createVector(
-        randomBetween(-properties.offset, properties.offset),
-        randomBetween(-properties.offset, properties.offset)
+        randomBetween(-properties.jitter, properties.jitter),
+        randomBetween(-properties.jitter, properties.jitter)
       );
       const xPercent = (node.x % 11) / 10;
       const yPercent = (node.y % 11) / 10;
