@@ -37,6 +37,19 @@ drawing.addEdge(a, d);
 
 renderer.start();
 
+renderer.setProperties(a, {
+  jitter: 0
+});
+
+renderer.setProperties(drawing.getDeterministicEdgeId(a, b), {
+  jitter: 20,
+  taper: false,
+  wave: {
+    speed: 0,
+    amplitude: 0
+  }
+});
+
 // let l;
 
 // for (let index = 0; index < 100; index++) {

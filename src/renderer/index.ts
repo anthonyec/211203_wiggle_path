@@ -76,6 +76,16 @@ class Renderer {
     this.graph = graph;
   }
 
+  setProperties(nodeId, properties: object) {
+    const existingProperties = this.properties.get(nodeId);
+
+    // TODO: Do deep merge to not override wave!
+    this.properties.set(nodeId, {
+      ...existingProperties,
+      ...properties
+    })
+  }
+
   getNodesWithEffectsApplied(nodes: Map<string, Vector2>) {
     // TODO: May not need to be reduce!
     return Array.from(nodes).reduce((mem, [nodeId, node], index) => {
