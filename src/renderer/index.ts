@@ -3,7 +3,7 @@ import { randomBetween } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
 const BASE_POINT_PROPERTIES = { offset: 0, wave: { speed: 1, amplitude: 5 } };
-const BASE_LINE_PROPERTIES = { segments: 100, wiggliness: 0, wave: { speed: 1, amplitude: 5 }  };
+const BASE_LINE_PROPERTIES = { segments: 10, wiggliness: 5, wave: { speed: 1, amplitude: 5 }  };
 
 export function drawPoint(context: CanvasRenderingContext2D, position, properties?) {
   const radius = 5;
@@ -13,55 +13,60 @@ export function drawPoint(context: CanvasRenderingContext2D, position, propertie
 }
 
 export function drawLine(context: CanvasRenderingContext2D, positionA: Vector2, positionB: Vector2, properties?) {
-  // context.beginPath();
-  // context.moveTo(positionA.x, positionA.y);
-  // context.lineTo(positionB.x, positionB.y);
-  // context.stroke();
-
-  const segments = properties.segments;
-  const wiggliness = properties.wiggliness;
-
-  // if (segments === 0 || wiggliness === 0) {
-  //   context.beginPath();
-  //   context.moveTo(positionA.x, positionA.y);
-  //   context.lineTo(positionB.x, positionB.y);
-  //   context.stroke();
-  //   return;
-  // }
+  const { segments, wiggliness, time } = properties;
 
   const distance = positionA.distanceTo(positionB);
   const segmentPercent = (distance / segments) / distance;
   const lineBetween = positionB.sub(positionA).scale(segmentPercent);
+  const line = positionB.sub(positionA);
   const perpendicularLine = lineBetween.perpendicular().normalize();
+
+  const total = segments + 1;
 
   let lastPosition = positionA;
 
-  for (let i = 0; i < segments; i++) {
-    const sin = Math.sin((properties.time * 1) + (i / 2)) * 10
-    const sin2 = Math.sin((properties.time * 1) + ((i + 1) / 2)) * 10
-    // context.strokeStyle = 'red';
-    // context.beginPath();
-    // context.moveTo(lastPosition.x, lastPosition.y);
-    // context.lineTo(...lastPosition.add(perpendicularLine.scale(sin)).components());
-    // context.stroke();
+  for (let i = 0; i < total; i++) {
+    const jointPosition = positionA.add(line.scale(i / segments));
+    const notEndJoints = i !== 0 && i !== segments;
 
-    const nextPosition = lastPosition
-      .add(lineBetween)
-      .add(perpendicularLine.scale(randomBetween(-wiggliness, wiggliness)))
+    let newJointPosition = jointPosition;
 
-    context.beginPath();
-    context.moveTo(...lastPosition.add(perpendicularLine.scale(sin)).components());
-
-    if (i === segments - 1) {
-      context.lineTo(...positionB.components());
-    } else {
-      context.lineTo(...nextPosition.add(perpendicularLine.scale(sin2)).components());
+    if (notEndJoints) {
+      newJointPosition = jointPosition.add(perpendicularLine.scale(
+        randomBetween(-wiggliness, wiggliness)
+      ));
     }
 
+    drawPoint(context, newJointPosition);
+    context.fillText(`${i}`, newJointPosition.x + 10, newJointPosition.y)
+
+    context.beginPath();
+    context.moveTo(...lastPosition.components());
+    context.lineTo(...newJointPosition.components());
     context.stroke();
 
-    lastPosition = nextPosition;
+    lastPosition = newJointPosition;
+
+    // let nextPosition = lastPosition.add(lineBetween);
+    // const isFirstLine = i === 0;
+    // const isLastLine = i === (segments - 1);
+
+    // // if (!isFirstLine) {
+    // //   lastPosition = lastPosition.add(perpendicularLine.scale(-30));
+    // // }
+
+    // // if (!isLastLine) {
+    // //   lastPosition = nextPosition.add(perpendicularLine.scale(-30));
+    // // }
+
+
+    // context.strokeStyle = 'red';
+    // drawPoint(context, nextPosition);
+    // context.fillText(`${i}`, nextPosition.x + 10, nextPosition.y)
+
+    // lastPosition = nextPosition;
   };
+
 };
 
 class Renderer {
