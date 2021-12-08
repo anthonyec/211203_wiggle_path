@@ -1,4 +1,5 @@
 export function createCanvas2D(width, height) {
+  const scaling = window.devicePixelRatio;
   const canvas = document.createElement('canvas') as HTMLCanvasElement;
   const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -10,10 +11,10 @@ export function createCanvas2D(width, height) {
 
     const bounds = canvas.getBoundingClientRect();
 
-    canvas.width = bounds.width * 2;
-    canvas.height = bounds.height * 2;
+    canvas.width = bounds.width * scaling;
+    canvas.height = bounds.height * scaling;
 
-    context.scale(2, 2);
+    context.scale(scaling, scaling);
   }
 
   if (!width && !height) {

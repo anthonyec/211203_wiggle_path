@@ -1,9 +1,10 @@
 import { DrawingGraph } from "../drawing_graph";
+import { sinWave } from "../lib/math";
 import { randomBetween } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
-const BASE_POINT_PROPERTIES = { offset: 0, wave: { speed: 1, amplitude: 5 } };
-const BASE_LINE_PROPERTIES = { segments: 10, wiggliness: 5, wave: { speed: 1, amplitude: 5 }  };
+const BASE_POINT_PROPERTIES = { offset: 0, wave: { speed: 1, amplitude: 50 } };
+const BASE_LINE_PROPERTIES = { segments: 100, jitter: 0, wave: { speed: 0.5, amplitude: 10 }, taper: true  };
 
 export function drawPoint(context: CanvasRenderingContext2D, position, properties?) {
   const radius = 5;
@@ -13,39 +14,55 @@ export function drawPoint(context: CanvasRenderingContext2D, position, propertie
 }
 
 export function drawLine(context: CanvasRenderingContext2D, positionA: Vector2, positionB: Vector2, properties?) {
-  const { segments, wiggliness, time } = properties;
+  let { segments, jitter, time, wave, taper } = properties;
 
   const line = positionB.sub(positionA);
   const normalizedPerpendicularLine = line.perpendicular().normalize();
 
+  const autoSegments = Math.floor((line.magnitude() / 100) / 0.2);
+
+  // TODO: Make controls for this?
+  // segments = autoSegments;
+
   let lastJoinPosition = positionA;
 
   // Plus one to include end joint.
+  context.beginPath();
   for (let i = 0; i < segments + 1; i++) {
-    const originalJointPosition = positionA.add(line.scale(i / segments));
+    const percent = i / segments;
+    const percentFromMiddle = taper ? 0.5 - Math.abs((percent - 0.5)) : 1;
+    const originalJointPosition = positionA.add(line.scale(percent));
     const notAtEndJoints = i !== 0 && i !== segments;
 
     let nextJointPosition = originalJointPosition;
 
     if (notAtEndJoints) {
       nextJointPosition = originalJointPosition.add(normalizedPerpendicularLine.scale(
-        randomBetween(-wiggliness, wiggliness)
-      ));
+        sinWave(properties.time, wave.speed, wave.amplitude, i) * percentFromMiddle
+      )).add(
+        normalizedPerpendicularLine.scale(
+          randomBetween(-jitter, jitter) * percentFromMiddle
+        )
+      );
     }
 
     // Debug show joints and indexes.
-    context.strokeStyle = 'red';
-    drawPoint(context, nextJointPosition);
-    context.fillText(`${i}`, nextJointPosition.x + 10, nextJointPosition.y - 5)
-    context.strokeStyle = 'white';
+    // context.strokeStyle = 'red';
+    // drawPoint(context, nextJointPosition);
+    // context.fillText(`${percentFromMiddle.toFixed(2)}`, nextJointPosition.x + 10, nextJointPosition.y - 5)
+    // context.strokeStyle = 'white';
 
-    context.beginPath();
-    context.moveTo(...lastJoinPosition.components());
+    if (i === 0) {
+      context.moveTo(...lastJoinPosition.components());
+    } else {
+      context.lineTo(...lastJoinPosition.components());
+    }
+
     context.lineTo(...nextJointPosition.components());
-    context.stroke();
 
     lastJoinPosition = nextJointPosition;
   }
+  context.stroke();
 };
 
 class Renderer {
@@ -90,6 +107,8 @@ class Renderer {
     const nodes = this.getNodesWithEffectsApplied(this.graph.nodes);
 
     this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+    this.context.imageSmoothingEnabled = false;
+    this.context.lineCap = 'round';
     // this.context.fillStyle = 'rgba(0, 0, 0, 0.4)';
     // this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
 
