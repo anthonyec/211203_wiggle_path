@@ -8,7 +8,7 @@ interface Rect {
   height: number;
 }
 
-class SpatialStructure {
+export class SpatialStructure {
   spatial = {};
 
   // TODO: Implement real spatial hashing when performance becomes a problem.

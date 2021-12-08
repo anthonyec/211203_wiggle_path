@@ -13,6 +13,7 @@
     "parcel": "^2.0.1"
   },
   "dependencies": {
-    "nanoevents": "^6.0.2"
+    "nanoevents": "^6.0.2",
+    "redux": "^4.1.2"
   }
 }

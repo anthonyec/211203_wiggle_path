@@ -4,7 +4,17 @@ import createSpatialStructure from './spatial_structure';
 import createRenderer from './renderer';
 import { createCanvas2D } from './lib/canvas';
 import { createVector, mouseEventToVector } from './lib/vector2';
-import { randomBetween } from './lib/random';
+
+import configureStore from './store';
+
+import SelectionManager from './components/selection_manager';
+
+const store = configureStore();
+
+store.subscribe(() => {
+  console.log(store.getState().selection)
+})
+
 
 // TODO: Disable hot-reload in parcel so I don't need to do this.
 document.body.innerHTML = '';
@@ -13,6 +23,8 @@ const [canvas, context] = createCanvas2D();
 const spatial = createSpatialStructure();
 const drawing = createDrawingGraph();
 const renderer = createRenderer(context, drawing);
+
+const selection = new SelectionManager(spatial, canvas, store);
 
 const zero = drawing.addNode(createVector(100, 100));
 const one = drawing.addNode(createVector(100, 200));
@@ -36,52 +48,15 @@ drawing.addEdge(b, c);
 drawing.addEdge(a, d);
 
 spatial.parseFromGraph(drawing);
-
 renderer.start();
 
-renderer.setProperties(a, {
-  line: {
-    jitter: 0
-  }
-});
-
-renderer.setProperties(a, {
-  line: {
-    jitter: 5
-  }
-});
-
-// renderer.setProperties(b, {
-//   jitter: 0,
-//   wave: {
-//     speed: 1,
-//     amplitude: 10
-//   }
+// canvas.addEventListener('mousemove', (event) => {
+//   const position = mouseEventToVector(event);
+//   const hits = spatial.hitWithinRadius(position, 12);
 // });
 
-// renderer.setProperties(drawing.getDeterministicEdgeId(b, c), {
-//   jitter: 0,
-//   wave: {
-//     speed: 1,
-//     amplitude: 10
-//   }
-// });
+// canvas.addEventListener('dblclick', (event) => {
+//   const position = mouseEventToVector(event);
 
-// renderer.setProperties(drawing.getDeterministicEdgeId(a, b), {
-//   jitter: 20,
-//   taper: false
-// });
-
-const bounds = spatial.getBoundingBox([c, b, a]);
-console.log(bounds);
-
-canvas.addEventListener('mousemove', (event) => {
-  const position = mouseEventToVector(event);
-  const hits = spatial.hitWithinRadius(position, 12);
-});
-
-canvas.addEventListener('dblclick', (event) => {
-  const position = mouseEventToVector(event);
-
-  drawing.addNode(position);
-})
+//   drawing.addNode(position);
+// })
