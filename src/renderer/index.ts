@@ -95,8 +95,6 @@ class Renderer {
         Math.sin(this.time * (properties.wave.speed * yPercent)) * properties.wave.amplitude,
       );
 
-      // console.log(Math.sin(this.time / 1000));
-
       mem[nodeId] = node.add(randomOffset).add(waveOffset);
 
       return mem;
@@ -134,7 +132,7 @@ class Renderer {
   }
 
   update() {
-    this.time += 0.16;
+    this.time += 0.16; // TODO: Add real delta time here.
     this.render();
     window.requestAnimationFrame(this.update.bind(this));
   }
