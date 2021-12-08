@@ -66,6 +66,13 @@ export class Vector2 {
   angleTo(b: Vector2) {
     return b.sub(this).angle();
   }
+
+  floor() {
+    return createVector(
+      Math.floor(this.x),
+      Math.floor(this.y)
+    )
+  }
 }
 
 export function createVector(x: number = 0, y: number = 0) {

@@ -35,44 +35,50 @@ drawing.addEdge(a, b);
 drawing.addEdge(b, c);
 drawing.addEdge(a, d);
 
+spatial.parseFromGraph(drawing);
+
 renderer.start();
 
 renderer.setProperties(a, {
-  jitter: 0
-});
-
-renderer.setProperties(b, {
-  jitter: 0,
-  wave: {
-    speed: 1,
-    amplitude: 10
+  line: {
+    jitter: 0
   }
 });
 
-renderer.setProperties(drawing.getDeterministicEdgeId(b, c), {
-  jitter: 0,
-  wave: {
-    speed: 1,
-    amplitude: 10
+renderer.setProperties(a, {
+  line: {
+    jitter: 5
   }
 });
 
-renderer.setProperties(drawing.getDeterministicEdgeId(a, b), {
-  jitter: 20,
-  taper: false
-});
-
-// let l;
-
-// for (let index = 0; index < 100; index++) {
-//   const n = drawing.addNode(createVector(randomBetween(0, 1000), randomBetween(0, 1000)));
-
-//   if (index > 0) {
-//     drawing.addEdge(l, n);
+// renderer.setProperties(b, {
+//   jitter: 0,
+//   wave: {
+//     speed: 1,
+//     amplitude: 10
 //   }
+// });
 
-//   l = n;
-// }
+// renderer.setProperties(drawing.getDeterministicEdgeId(b, c), {
+//   jitter: 0,
+//   wave: {
+//     speed: 1,
+//     amplitude: 10
+//   }
+// });
+
+// renderer.setProperties(drawing.getDeterministicEdgeId(a, b), {
+//   jitter: 20,
+//   taper: false
+// });
+
+const bounds = spatial.getBoundingBox([c, b, a]);
+console.log(bounds);
+
+canvas.addEventListener('mousemove', (event) => {
+  const position = mouseEventToVector(event);
+  const hits = spatial.hitWithinRadius(position, 12);
+});
 
 canvas.addEventListener('dblclick', (event) => {
   const position = mouseEventToVector(event);
