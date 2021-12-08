@@ -2,10 +2,6 @@ import { randomId } from "../lib/random";
 import { check, splice, unique } from '../lib/array';
 import { Vector2 } from "../lib/vector2";
 
-function getDeterministicEdgeId(fromElementId: string, toElementId: string) {
-  return [fromElementId, toElementId].sort().join('-')
-}
-
 export class DrawingGraph {
   edges = new Map();
   adjacencyList = new Map();
@@ -13,6 +9,10 @@ export class DrawingGraph {
   properties = new Map();
 
   constructor() {}
+
+  getDeterministicEdgeId(fromElementId: string, toElementId: string) {
+    return [fromElementId, toElementId].sort().join('-')
+  }
 
   addNode(position: Vector2, properties?: object) {
     const id = randomId();
@@ -60,7 +60,7 @@ export class DrawingGraph {
   }
 
   addEdge(fromNodeId: string, toNodeId: string) {
-    const deterministicEdgeId = getDeterministicEdgeId(fromNodeId, toNodeId);
+    const deterministicEdgeId = this.getDeterministicEdgeId(fromNodeId, toNodeId);
     const adjacentNodesA = this.adjacencyList.get(fromNodeId) || [];
     const adjacentNodesB = this.adjacencyList.get(toNodeId) || [];
 
@@ -78,13 +78,13 @@ export class DrawingGraph {
   }
 
   getEdge(fromNodeId: string, toNodeId: string) {
-    const deterministicEdgeId = getDeterministicEdgeId(fromNodeId, toNodeId);
+    const deterministicEdgeId = this.getDeterministicEdgeId(fromNodeId, toNodeId);
 
     return this.edges.get(deterministicEdgeId);
   }
 
   removeEdge(fromNodeId: string, toNodeId: string) {
-    const deterministicEdgeId = getDeterministicEdgeId(fromNodeId, toNodeId);
+    const deterministicEdgeId = this.getDeterministicEdgeId(fromNodeId, toNodeId);
 
     this.edges.delete(deterministicEdgeId);
     this.adjacencyList.delete(fromNodeId);
