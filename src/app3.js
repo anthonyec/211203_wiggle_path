@@ -41,13 +41,25 @@ renderer.setProperties(a, {
   jitter: 0
 });
 
+renderer.setProperties(b, {
+  jitter: 0,
+  wave: {
+    speed: 1,
+    amplitude: 10
+  }
+});
+
+renderer.setProperties(drawing.getDeterministicEdgeId(b, c), {
+  jitter: 0,
+  wave: {
+    speed: 1,
+    amplitude: 10
+  }
+});
+
 renderer.setProperties(drawing.getDeterministicEdgeId(a, b), {
   jitter: 20,
-  taper: false,
-  wave: {
-    speed: 0,
-    amplitude: 0
-  }
+  taper: false
 });
 
 // let l;

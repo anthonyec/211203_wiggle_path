@@ -4,7 +4,7 @@ import { randomBetween } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
 const BASE_POINT_PROPERTIES = { jitter: 0, wave: { speed: 0, amplitude: 0 } };
-const BASE_LINE_PROPERTIES = { segments: 20, jitter: 0, wave: { speed: 0.5, amplitude: 10 }, taper: true  };
+const BASE_LINE_PROPERTIES = { segments: 20, jitter: 0, wave: { speed: 0, amplitude: 0 }, taper: true  };
 
 export function drawPoint(context: CanvasRenderingContext2D, position, properties?) {
   const radius = 5;
