@@ -15,58 +15,37 @@ export function drawPoint(context: CanvasRenderingContext2D, position, propertie
 export function drawLine(context: CanvasRenderingContext2D, positionA: Vector2, positionB: Vector2, properties?) {
   const { segments, wiggliness, time } = properties;
 
-  const distance = positionA.distanceTo(positionB);
-  const segmentPercent = (distance / segments) / distance;
-  const lineBetween = positionB.sub(positionA).scale(segmentPercent);
   const line = positionB.sub(positionA);
-  const perpendicularLine = lineBetween.perpendicular().normalize();
+  const normalizedPerpendicularLine = line.perpendicular().normalize();
 
-  const total = segments + 1;
+  let lastJoinPosition = positionA;
 
-  let lastPosition = positionA;
+  // Plus one to include end joint.
+  for (let i = 0; i < segments + 1; i++) {
+    const originalJointPosition = positionA.add(line.scale(i / segments));
+    const notAtEndJoints = i !== 0 && i !== segments;
 
-  for (let i = 0; i < total; i++) {
-    const jointPosition = positionA.add(line.scale(i / segments));
-    const notEndJoints = i !== 0 && i !== segments;
+    let nextJointPosition = originalJointPosition;
 
-    let newJointPosition = jointPosition;
-
-    if (notEndJoints) {
-      newJointPosition = jointPosition.add(perpendicularLine.scale(
+    if (notAtEndJoints) {
+      nextJointPosition = originalJointPosition.add(normalizedPerpendicularLine.scale(
         randomBetween(-wiggliness, wiggliness)
       ));
     }
 
-    drawPoint(context, newJointPosition);
-    context.fillText(`${i}`, newJointPosition.x + 10, newJointPosition.y)
+    // Debug show joints and indexes.
+    context.strokeStyle = 'red';
+    drawPoint(context, nextJointPosition);
+    context.fillText(`${i}`, nextJointPosition.x + 10, nextJointPosition.y - 5)
+    context.strokeStyle = 'white';
 
     context.beginPath();
-    context.moveTo(...lastPosition.components());
-    context.lineTo(...newJointPosition.components());
+    context.moveTo(...lastJoinPosition.components());
+    context.lineTo(...nextJointPosition.components());
     context.stroke();
 
-    lastPosition = newJointPosition;
-
-    // let nextPosition = lastPosition.add(lineBetween);
-    // const isFirstLine = i === 0;
-    // const isLastLine = i === (segments - 1);
-
-    // // if (!isFirstLine) {
-    // //   lastPosition = lastPosition.add(perpendicularLine.scale(-30));
-    // // }
-
-    // // if (!isLastLine) {
-    // //   lastPosition = nextPosition.add(perpendicularLine.scale(-30));
-    // // }
-
-
-    // context.strokeStyle = 'red';
-    // drawPoint(context, nextPosition);
-    // context.fillText(`${i}`, nextPosition.x + 10, nextPosition.y)
-
-    // lastPosition = nextPosition;
-  };
-
+    lastJoinPosition = nextJointPosition;
+  }
 };
 
 class Renderer {
