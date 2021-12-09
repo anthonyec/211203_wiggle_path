@@ -1,12 +1,15 @@
 import {
   SELECTION_ADD,
+  SELECTION_ADD_MULTIPLE,
   SELECTION_REMOVE,
-  SELECTION_SET_MODE
+  SELECTION_SET_MODE,
+  SELECTION_SET_TOOL
 } from '../actions/selection';
-import { splice } from '../../lib/array';
+import { splice, unique } from '../../lib/array';
 
 const initialState = {
   mode: 'single',
+  tool: 'pointer',
   selected: [],
 };
 
@@ -18,7 +21,38 @@ export default function selectionReducer(state = initialState, action) {
     }
   }
 
-  if (action.type === SELECTION_ADD) {
+  if (action.type === SELECTION_SET_TOOL) {
+    return {
+      ...state,
+      tool: action.payload
+    }
+  }
+
+  if (action.type === SELECTION_ADD_MULTIPLE && state.tool === 'box-select') {
+    if (state.mode === 'multiple') {
+      // TODO: Boolean logic ahhhh.
+      const selectedWithoutDuplicated = unique([...state.selected, ...action.payload]);
+
+      return {
+        ...state,
+        selected: selectedWithoutDuplicated
+      };
+    }
+
+    if (action.payload.length === 0) {
+      return {
+        ...state,
+        selected: []
+      };
+    }
+
+    return {
+      ...state,
+      selected: [...action.payload]
+    };
+  }
+
+  if (action.type === SELECTION_ADD && state.tool === 'pointer') {
     if (state.mode === 'multiple') {
       const existingIndex = state.selected.indexOf(action.payload);
       const alreadyExistsInSelection = existingIndex !== -1;
