@@ -2,9 +2,9 @@ export function randomBetween(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
-let i = -1;
+// let i = -1;
 export function randomId() {
-  i++;
-  return `${i}`;
+  // i++;
+  // return `${i}`;
   return Math.random().toString(36).replace('0.', '');
 }

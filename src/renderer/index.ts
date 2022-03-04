@@ -3,8 +3,8 @@ import { sinWave } from "../lib/math";
 import { randomBetween } from "../lib/random";
 import { createVector, Vector2 } from "../lib/vector2";
 
-const BASE_POINT_PROPERTIES = { jitter: 0, wave: { speed: 0, amplitude: 0 } };
-const BASE_LINE_PROPERTIES = { segments: 20, jitter: 0, wave: { speed: 0, amplitude: 0 }, taper: true  };
+const BASE_POINT_PROPERTIES = { jitter: 2, wave: { speed: 1, amplitude: 1 } };
+const BASE_LINE_PROPERTIES = { segments: 2, jitter: 0, wave: { speed: 2, amplitude: 1 }, taper: false  };
 
 export function drawPoint(context: CanvasRenderingContext2D, position, properties?) {
   const radius = 5;

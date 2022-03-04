@@ -8,8 +8,6 @@ export class DrawingGraph {
   nodes = new Map();
   properties = new Map();
 
-  constructor() {}
-
   getDeterministicEdgeId(fromElementId: string, toElementId: string) {
     return [fromElementId, toElementId].sort().join('-')
   }
